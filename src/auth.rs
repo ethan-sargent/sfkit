@@ -30,7 +30,7 @@ pub fn run(args: &ArgMatches) {
             Ok(()) => println!("Successfully set new default username."),
             Err(message) => println!("{}", message),
         },
-        Some(("list", sub_m)) => {
+        Some(("list", _sub_m)) => {
             match get_usernames() {
                 Ok(usernames) => print_usernames(&usernames),
                 Err(m) => println!("Unable to get usernames. Details: {}", m),
