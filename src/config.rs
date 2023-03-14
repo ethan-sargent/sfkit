@@ -65,15 +65,15 @@ pub struct Config {
 
     #[serde(skip_serializing_if = "Option::is_none", alias = "apiVersion")]
     #[arg(long, action=ArgAction::Set)]
-    org_api_version: Option<u8>,
+    org_api_version: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none", alias = "restDeploy")]
-    #[arg(long, action=ArgAction::Set)]
-    org_metadata_rest_deploy: Option<bool>,
+    #[arg(long, action=ArgAction::Set, value_parser = ["true", "false"])]
+    org_metadata_rest_deploy: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none", alias = "disableTelemetry")]
-    #[arg(long)]
-    disable_telemetry: Option<bool>,
+    #[arg(long, value_parser = ["true", "false"])]
+    disable_telemetry: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none", alias = "instanceUrl")]
     #[arg(long, value_hint = ValueHint::Url)]
@@ -81,7 +81,7 @@ pub struct Config {
 
     #[serde(skip_serializing_if = "Option::is_none", alias = "maxQueryLimit")]
     #[arg(long, value_hint = ValueHint::Other)]
-    org_max_query_limit: Option<u32>,
+    org_max_query_limit: Option<String>,
 
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -99,12 +99,12 @@ impl Config {
         Self {
             target_org: self.target_org.clone().or(other.target_org.clone()),
             target_dev_hub: self.target_dev_hub.clone().or(other.target_dev_hub.clone()),
-            org_api_version: self.org_api_version.clone().or(other.org_api_version),
+            org_api_version: self.org_api_version.clone().or(other.org_api_version.clone()),
             org_metadata_rest_deploy: self
                 .org_metadata_rest_deploy
                 .clone()
-                .or(other.org_metadata_rest_deploy),
-            disable_telemetry: self.disable_telemetry.clone().or(other.disable_telemetry),
+                .or(other.org_metadata_rest_deploy.clone()),
+            disable_telemetry: self.disable_telemetry.clone().or(other.disable_telemetry.clone()),
             org_instance_url: self
                 .org_instance_url
                 .clone()
@@ -112,7 +112,7 @@ impl Config {
             org_max_query_limit: self
                 .org_max_query_limit
                 .clone()
-                .or(other.org_max_query_limit),
+                .or(other.org_max_query_limit.clone()),
             org_custom_metadata_templates: self
                 .org_custom_metadata_templates
                 .clone()
