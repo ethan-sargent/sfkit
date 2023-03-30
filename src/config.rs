@@ -1,5 +1,5 @@
-use anyhow::{Context, Result, Error};
-use clap::{ArgAction, ArgMatches, Args, FromArgMatches, Parser, Subcommand, ValueHint};
+use anyhow::{Context, Error, Result};
+use clap::{ArgAction, ArgMatches, FromArgMatches, Parser, Subcommand, ValueHint};
 use serde::{Deserialize, Serialize};
 use std::{env, fs};
 
@@ -11,45 +11,51 @@ pub fn run(matches: &ArgMatches) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn write_config(args: ConfigArgs) -> Result<()> {
-    let new_config = args.config;
-    let existing_config = get_saved_config(&args.location);
+pub fn write_config(new_config: Config) -> Result<()> {
+    let existing_config = get_saved_config(&new_config.global);
     let config = match existing_config {
         Ok(saved_config) => new_config.merge(&saved_config),
         Err(_) => new_config,
     };
     let serialized_config = serde_json::to_string(&config)?;
 
-    fs::write(get_config_path(&args.location)?, serialized_config + "\n")?;
+    fs::write(
+        get_config_filepath(&config.global)?,
+        serialized_config + "\n",
+    )?;
     Ok(())
 }
 
-pub fn get_saved_config(location: &ConfigLocation) -> Result<Config, Error> {
-    let config_path = get_config_path(&location)
-        .with_context(|| format!("Unable to get sfdx configuration path for {:?}", &location))?;
+pub fn get_saved_config(global: &bool) -> Result<Config, Error> {
+    let config_path = get_config_filepath(global)
+        .with_context(|| format!("Unable to get sfdx configuration path for {:?}", &global))?;
 
     let contents = fs::read_to_string(config_path.as_path()).context(
         format!(
             "Unable to read sfdx configuration from {}",
             &config_path.to_str().unwrap()
-        ).to_owned()
+        )
+        .to_owned(),
     )?;
     return Ok(serde_json::from_str::<Config>(&contents)?);
 }
 
-pub fn get_config_path(location: &ConfigLocation) -> Result<std::path::PathBuf> {
-    let config_path = match location {
-        ConfigLocation::Project => env::current_dir().context("hi")?,
-        ConfigLocation::Global => dirs::home_dir()
+pub fn get_config_filepath(global: &bool) -> Result<std::path::PathBuf> {
+    let config_file = get_config_dir(global)?.join("sfdx-config.json");
+    Ok(config_file)
+}
+pub fn get_config_dir(global: &bool) -> Result<std::path::PathBuf> {
+    let config_path = match global {
+        false => env::current_dir().context("hi")?,
+        true => dirs::home_dir()
             .expect("Could not find home directory. Unable to find global configuration."),
     }
-    .join(".sfdx")
-    .join("sfdx-config.json");
+    .join(".sfdx");
     Ok(config_path)
 }
 
 /// Update runtime configuration values for the CLI.
-#[derive(Args, Serialize, Deserialize)]
+#[derive(Parser, Serialize, Deserialize, Default, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct Config {
     #[serde(skip_serializing_if = "Option::is_none", alias = "defaultusername")]
@@ -89,22 +95,31 @@ pub struct Config {
     )]
     #[arg(long)]
     org_custom_metadata_templates: Option<String>,
+
+    #[serde(skip)]
+    #[arg(short, long)]
+    global: bool,
 }
 
 impl Config {
-    /// Takes a different configuration and merges the configurations together by applying any values
-    /// from other that do not exist in self.
-    /// Conflicts will use the values from self.
+    /// Merges two configurations together. 
+    /// Prefers values from self if present
     pub fn merge(self: &Self, other: &Config) -> Self {
         Self {
             target_org: self.target_org.clone().or(other.target_org.clone()),
             target_dev_hub: self.target_dev_hub.clone().or(other.target_dev_hub.clone()),
-            org_api_version: self.org_api_version.clone().or(other.org_api_version.clone()),
+            org_api_version: self
+                .org_api_version
+                .clone()
+                .or(other.org_api_version.clone()),
             org_metadata_rest_deploy: self
                 .org_metadata_rest_deploy
                 .clone()
                 .or(other.org_metadata_rest_deploy.clone()),
-            disable_telemetry: self.disable_telemetry.clone().or(other.disable_telemetry.clone()),
+            disable_telemetry: self
+                .disable_telemetry
+                .clone()
+                .or(other.disable_telemetry.clone()),
             org_instance_url: self
                 .org_instance_url
                 .clone()
@@ -117,17 +132,9 @@ impl Config {
                 .org_custom_metadata_templates
                 .clone()
                 .or(other.org_custom_metadata_templates.clone()),
+            global: self.global,
         }
     }
-}
-
-#[derive(Parser)]
-pub struct ConfigArgs {
-    #[arg(value_enum, short, long, global = false, default_value_t = ConfigLocation::Project)]
-    location: ConfigLocation,
-
-    #[command(flatten)]
-    config: Config,
 }
 
 #[derive(Parser)]
@@ -136,8 +143,8 @@ struct ListArgs {}
 #[derive(Subcommand)]
 pub enum ConfigCommand {
     // List(ListArgs),
-    Set(ConfigArgs),
-    // Unset(ConfigArgs),
+    Set(Config),
+    // Unset(Config),
 }
 #[derive(clap::ValueEnum, Clone, Debug, Copy)]
 pub enum ConfigLocation {

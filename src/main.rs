@@ -15,9 +15,9 @@ pub enum Commands {
 fn cli() -> Command {
     let command = Command::new("sfkit")
         .author("Ethan Sargent, ethan.sargent@icloud.com")
-        .version("0.0.1")
+        .version("0.0.2")
         .about("Blazingly fast Salesforce developer tools, built with Rust.")
-        .subcommand_required(true)
+        .arg_required_else_help(true)
         .subcommands([
             auth::subcommand(),
             completions::subcommand()
