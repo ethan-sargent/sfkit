@@ -22,8 +22,8 @@ fn cli() -> Command {
             auth::subcommand(),
             completions::subcommand()
         ]);
-    let command = Commands::augment_subcommands(command);
-    command
+    
+    Commands::augment_subcommands(command)
 }
 
 
@@ -32,14 +32,14 @@ pub fn main() {
 
      let result: Result<(), Error> = match app_m.subcommand() {
         Some(("auth", sub_matches)) => {
-            auth::run(&sub_matches)
+            auth::run(sub_matches)
         }
         Some(("completions", sub_matches)) => {
             let mut cli = cli();
-            completions::print_completions(&sub_matches, &mut cli)
+            completions::print_completions(sub_matches, &mut cli)
         }
         Some(("config", sub_matches)) => {
-           config::run(&sub_matches)
+           config::run(sub_matches)
         }
         _ => {
             unreachable!()
@@ -47,6 +47,6 @@ pub fn main() {
     };
     match result {
         Ok(_) => (),
-        Err(e) => eprintln!("{:#?}", Error::from(e))
+        Err(e) => eprintln!("{:#?}", e)
     };
 }

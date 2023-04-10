@@ -35,9 +35,9 @@ pub fn get_saved_config(global: &bool) -> Result<Config, Error> {
             "Unable to read sfdx configuration from {}",
             &config_path.to_str().unwrap()
         )
-        .to_owned(),
+        ,
     )?;
-    return Ok(serde_json::from_str::<Config>(&contents)?);
+    Ok(serde_json::from_str::<Config>(&contents)?)
 }
 
 pub fn get_config_filepath(global: &bool) -> Result<std::path::PathBuf> {
@@ -104,7 +104,7 @@ pub struct Config {
 impl Config {
     /// Merges two configurations together. 
     /// Prefers values from self if present
-    pub fn merge(self: &Self, other: &Config) -> Self {
+    pub fn merge(&self, other: &Config) -> Self {
         Self {
             target_org: self.target_org.clone().or(other.target_org.clone()),
             target_dev_hub: self.target_dev_hub.clone().or(other.target_dev_hub.clone()),
