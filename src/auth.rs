@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::{Arg, ArgMatches, Command};
 use regex::Regex;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
@@ -19,15 +19,7 @@ pub fn subcommand() -> Command {
     Command::new("auth")
         .about("Commands that allow you to view and update connections to salesforce orgs.")
         .subcommand_required(true)
-        .subcommands([
-            Command::new("list").about("Lists available usernames and aliases"),
-            Command::new("set")
-                .about("Change the default org for the current project.")
-                .args([Arg::new("target-org")
-                    .short('o')
-                    .help("Username or alias for the current org.")
-                    .required(true)]),
-        ])
+        .subcommands([Command::new("list").about("Lists available usernames and aliases")])
 }
 
 pub fn run(args: &ArgMatches) -> anyhow::Result<()> {
@@ -73,23 +65,6 @@ fn read_usernames(sfdx_dir: &PathBuf) -> Result<Vec<String>> {
 struct Aliases {
     orgs: BTreeMap<String, String>,
 }
-
-// fn get_aliases(sfdx_dir: &PathBuf) -> Result<BTreeMap<&str, &str>> {
-//     sfdx_dir.push("aliases.json");
-//     let aliases = fs::read_to_string(sfdx_dir)?;
-    // Ok(
-    //     .filter_map(|file| {
-    //         Some(
-    //             username_regex
-    //                 .captures(file.unwrap().file_name().to_str().unwrap())?
-    //                 .name("username")?
-    //                 .as_str()
-    //                 .to_owned(),
-    //         )
-    //     })
-    //     .collect())
-// }
-
 
 pub fn print_usernames(usernames: &Vec<String>) {
     for username in usernames {
