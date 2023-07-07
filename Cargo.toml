@@ -9,7 +9,7 @@ lto = "thin"
 
 [dependencies]
 anyhow = "1.0.69"
-clap = { version = "4.1.8", features = ["derive", "env"] }
+clap = { version = "4.3.4", features = ["derive", "env"] }
 clap_complete = "4.1.4"
 dirs = "4.0.0"
 regex = "1.7.1"
