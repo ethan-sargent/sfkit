@@ -22,7 +22,7 @@ pub fn subcommand() -> Command {
         .subcommands([Command::new("list").about("Lists available usernames and aliases")])
 }
 
-pub fn run(args: &ArgMatches) -> anyhow::Result<()> {
+pub fn run(args: &ArgMatches) -> Result<()> {
     match args.subcommand() {
         Some(("list", _sub_m)) => match get_usernames() {
             Ok(usernames) => {
