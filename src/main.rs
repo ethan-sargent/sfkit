@@ -1,3 +1,11 @@
+#![deny(clippy::perf)]
+#![deny(clippy::style)]
+#![warn(clippy::suspicious)]
+#![warn(clippy::correctness)]
+#![warn(clippy::complexity)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+
 pub mod auth;
 pub mod completions;
 pub mod config;
