@@ -15,6 +15,7 @@ enum Actions {
     Logout,
 }
 
+#[must_use]
 pub fn subcommand() -> Command {
     Command::new("auth")
         .about("Commands that allow you to view and update connections to salesforce orgs.")
@@ -38,7 +39,7 @@ pub fn run(args: &ArgMatches) -> Result<()> {
 }
 
 pub fn get_usernames() -> Result<Vec<String>> {
-    let sfdx_dir = config::get_config_dir(&true)?;
+    let sfdx_dir = config::directory(&true)?;
 
     let usernames = read_usernames(&sfdx_dir)?;
     Ok(usernames)
@@ -68,6 +69,6 @@ struct Aliases {
 
 pub fn print_usernames(usernames: &Vec<String>) {
     for username in usernames {
-        println!("Username: {}", username)
+        println!("Username: {username}");
     }
 }
